@@ -12,7 +12,10 @@ app.use(express.json())
 
 app.use('/api/register', require('./routes/api/register'))
 app.use('/api/login', require('./routes/api/login'))
-app.use('/api/user/', require('./routes/api/user'))
+// app.use('/api/user/email', require('./routes/api/userMail'))
+// app.use('/api/user/password', require('./routes/api/userPassword'))
+// app.use('/api/user/name', require('./routes/api/userName'))
+// app.use('/api/user/type', require('./routes/api/userType'))
 
 app.get('/', (req, res)=>{
     res.send('Hello Harvey')
