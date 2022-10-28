@@ -45,7 +45,7 @@ router.post('/',
             emailVerified: false,
             password: password,
             displayName: `${firstName} ${lastName}`,
-            photoURL: 'http://www.example.com/12345678/photo.png',
+            photoURL: null,
             disabled: false,
         })
         .then(async(userRecord) => {
@@ -57,7 +57,6 @@ router.post('/',
             Name:userRecord.displayName,
             type: 'user',
             phoneNumber: '',
-            password: password,
             profilePic: userRecord.photoURL,
             email: userRecord.email,
             })
@@ -72,9 +71,19 @@ router.post('/',
             console.log(response);
                 axios.post('https://identitytoolkit.googleapis.com/v1/accounts:sendOobCode?key=AIzaSyAebWXihdpH37PIfJOVWqvyi92mll9AFjk',
            { requestType: 'VERIFY_EMAIL', idToken: response.data.idToken }
-           ).then(()=>{
-            return res.status(200).json({...response.data
+           ).then(async()=>{
+            const userRef = db.collection('users')
+            let user = await userRef.where('email', '==', email).get()
+            // if(user.empty){
+            //     return res.status(400).json({errors: 'Email not found'})
+            // }
+            var found;
+            user.forEach((doc)=>{
+                found = doc.data();
+                return res.status(200).json({...found,...response.data})
             })
+
+            
            })
            })
 

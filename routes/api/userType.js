@@ -3,23 +3,20 @@ const express = require('express')
 const router = express.Router();
 
 const admin = require('firebase-admin');
-
 const { getAuth } = require('firebase-admin/auth');
 
 const db = admin.firestore();
 
-router.put('/:id', (req, res)=>{
+router.post('/:id', async(req, res)=>{
 
-    const {password} = req.body;
+    const {type} = req.body;
     const uid = req.params.id;
 
-    getAuth()
-  .updateUser(uid, {
-    password: password,
-  })
+    await db.collection('users').doc(uid).update({
+        type:type
+      })
   .then(async(userRecord) => {
-    // console.log('Successfully updated user', userRecord.toJSON());
-    return res.status(200).json({...userRecord})
+    return res.status(200).json({type: type})
   })
   .catch((error) => {
     return res.status(400).json({...error})
