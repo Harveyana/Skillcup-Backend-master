@@ -20,6 +20,7 @@ app.use('/api/updateUserName', require('./routes/api/userName'))
 app.use('/api/updateUserType', require('./routes/api/userType'))
 app.use('/api/updateProfilePic', require('./routes/api/uploadProfilePic'))
 app.use('/api/addCourse', require('./routes/api/addCourse'))
+app.use('/api/addCourseThumbnail', require('./routes/api/courseThumbnail'))
 
 app.get('/', (req, res)=>{
     res.send('Hello Harvey')

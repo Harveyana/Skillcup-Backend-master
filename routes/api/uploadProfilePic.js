@@ -19,7 +19,15 @@ const router = express.Router();
 
 const processFile = Multer({
   limits: {
-    fileSize: 100 * 1024 * 1024 // no larger than 5mb, you can change as needed.
+    fileSize: 5 * 1024 * 1024 // no larger than 5mb, you can change as needed.
+  },
+  fileFilter: (req, file, cb) => {
+    if (file.mimetype == "image/png" || file.mimetype == "image/jpg" || file.mimetype == "image/jpeg") {
+      cb(null, true);
+    } else {
+      cb(null, false);
+      return cb(new Error('Only .png, .jpg and .jpeg format allowed!'));
+    }
   }
 }).single("file");
 
@@ -49,7 +57,9 @@ router.post('/:id', processFile, (req, res) => {
       fileStream.write(req.file.buffer);
 
       fileStream.on('error', err => {
-        console.error('error', err)
+         res.status(400).json({ 
+          message: err
+         });
       });
 
     fileStream.on('finish', async() => {

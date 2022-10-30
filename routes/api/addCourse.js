@@ -32,7 +32,15 @@ const maxSize = 100000000;
 
 const processFile = Multer({
   limits: {
-    fileSize: 400 * 1024 * 1024 // no larger than 5mb, you can change as needed.
+    fileSize: 500 * 1024 * 1024 // no larger than 500mb, you can change as needed.
+  },
+  fileFilter: (req, file, cb) => {
+    if (file.mimetype == "video/mp4" || file.mimetype == "video/mkv" || file.mimetype == "video/avi") {
+      cb(null, true);
+    } else {
+      cb(null, false);
+      return cb(new Error('Only .mp4, .mkv and .avi format allowed!'));
+    }
   }
 }).single("file");
 
@@ -40,7 +48,7 @@ const processFile = Multer({
 const bucket = getStorage().bucket();
 const db = admin.firestore();
 
-router.post('/:id', processFile, (req, res) => {
+router.post('/:id', processFile, async(req, res) => {
 
     // res.status(201).json(req.file)
     // const uid = req.params.id;
@@ -91,7 +99,8 @@ router.post('/:id', processFile, (req, res) => {
   //   });
   // }
       
-
+  const uid = req.params.id;
+  const { name, description, category, price, author, body } = req.body
 
   const newFile = bucket.file(req.file.originalname);
 
@@ -103,35 +112,88 @@ router.post('/:id', processFile, (req, res) => {
     public: true
   });
 
-  fileStream.write(req.file.buffer);
+  try {
 
-  fileStream.on('error', err => {
-    console.error('error', err)
-  });
+    /// validation for admins only(only admins can create a Course)
 
-  fileStream.on('finish', async() => {
-      const publicUrl = format(
-        `https://storage.googleapis.com/${bucket.name}/${req.file.originalname}`
-      );
-      console.log(publicUrl)
-      // res.status(200).json({ 
-      //   status: res.statusCode,
-      //   message: publicUrl
-      // });
+       const userRef = db.collection('users')
+       let user = await userRef.where('uid', '==', uid).get()
+           
+       var found;
+        user.forEach((doc)=>{
+        found = doc.data();
+          
+        if (found.type == 'admin') {
+
+                      fileStream.write(req.file.buffer);
+
+                      fileStream.on('error', err => {
+                        console.error('error', err)
+                        res.status(400).json({ 
+                          message: err
+                          });
+                      });
+
+                      fileStream.on('finish', async() => {
+                          const publicUrl = format(
+                            `https://storage.googleapis.com/${bucket.name}/${req.file.originalname}`
+                          );
+                          console.log(publicUrl)
+
+                          // upload Course documents together with the video url 
+
+                          courseId = `${name}${Date.now()}`
+                          await db.collection('courses').doc(courseId).set({
+                            courseId: courseId,
+                            name:name,
+                            videoUrl: publicUrl,
+                            description: description,
+                            category: category,
+                            thumbnail: null,
+                            price: price,
+                            body: body,
+                            author: author,
+                            createdBy: uid,
+                          })
 
 
-   console.log(`gs://${bucket.name}/${req.file.originalname} is now public.`);
+                          res.status(200).json({ 
+                            message: 'Course created successfully'
+                          });
+
+
+                      console.log(`gs://${bucket.name}/${req.file.originalname} is now public.`);
+                      
+                        console.log('finish!');
+                      });
+
+                      fileStream.end();
+
+        } else {
+
+          res.status(400).json({ 
+          message: ' User not an administrator'
+          });
+
+
+        }
+
+
+
+        })
+
+    
+
+  } catch (error) {
+    res.status(400).json({ 
+      message: err
+    });
+  }
+
   
-    console.log('finish!');
-  });
-
-  fileStream.end();
 
   // 7 response
-  res.status(200).json({ 
-    status: res.statusCode,
-    message: 'Upload OK'
-  });
+  
 
       
     
