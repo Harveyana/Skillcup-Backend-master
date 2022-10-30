@@ -23,6 +23,8 @@ const processFile = Multer({
   }
 }).single("file");
 
+const { getAuth } = require('firebase-admin/auth');
+
 const bucket = getStorage().bucket();
 const db = admin.firestore();
 
@@ -64,6 +66,10 @@ router.post('/:id', processFile, (req, res) => {
         if (found.profilePic) {
            await bucket.file(found.profilePicName).delete()
 
+              getAuth()
+              .updateUser(uid, {
+                photoURL: publicUrl,
+              })
               await db.collection('users').doc(uid).set({
               profilePic: publicUrl,
               profilePicName: req.file.originalname
