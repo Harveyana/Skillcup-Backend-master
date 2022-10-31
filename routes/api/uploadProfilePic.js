@@ -40,7 +40,6 @@ router.post('/:id', processFile, (req, res) => {
 
   const uid = req.params.id;
 
-
   const newFile = bucket.file(req.file.originalname);
 
  const fileStream = newFile.createWriteStream({

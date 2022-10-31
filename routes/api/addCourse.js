@@ -147,6 +147,7 @@ router.post('/:id', processFile, async(req, res) => {
                             courseId: courseId,
                             name:name,
                             videoUrl: publicUrl,
+                            filename: req.file.originalname,
                             description: description,
                             category: category,
                             thumbnail: null,

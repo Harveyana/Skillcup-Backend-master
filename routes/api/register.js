@@ -45,7 +45,6 @@ router.post('/',
             emailVerified: false,
             password: password,
             displayName: `${firstName} ${lastName}`,
-            photoURL: null,
             disabled: false,
         })
         .then(async(userRecord) => {
@@ -55,10 +54,10 @@ router.post('/',
             await db.collection('users').doc(userRecord.uid).set({
             uid: userRecord.uid,
             Name:userRecord.displayName,
+            courses: [],
             type: 'user',
             phoneNumber: '',
-            profilePic: userRecord.photoURL,
-            email: userRecord.email,
+            email: userRecord.email
             })
             // const user = getAuth().getUser(userRecord.uid);
 
